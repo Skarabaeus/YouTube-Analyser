@@ -24,33 +24,40 @@ These rules apply to every contributor, human or AI agent, and to every change i
 - Every `design.md` contains a **Security considerations** section and, where data is stored, a **Data retention** section referencing `SPEC.md` §7.
 - Trivial changes (typos, formatting, patch-level dependency bumps without behaviour change) may skip a proposal. The commit subject then starts with `no-spec:` and gives the reason.
 
-## 2. Security review on every commit
+## 2. Security review before every push
 
-**Every commit is security reviewed before it is created**, small changes included.
+**No commit leaves this machine without a security review**, small changes included. Fast, deterministic checks run on every commit. The AI security review runs before every push and covers **every commit that is not on the remote yet**.
 
 ### Procedure
-1. Stage the intended changes.
-2. Run the security review on the staged diff:
-   - interactively in Claude Code: `/security-review`
-   - headless (git hook): `scripts/security-review-hook.sh` runs `claude -p` with an explicit review prompt for the staged diff (the built-in `/security-review` needs a pushed `origin/HEAD`)
-3. Resolve every finding of severity *medium* or higher. Alternatively, document an explicit, justified acceptance in the commit message.
-4. All automated checks (below) pass.
-5. Commit with the trailer:
-   ```
-   Security-Review: passed (<YYYY-MM-DD>, <claude|human>)[; accepted: <finding> — <reason>]
-   ```
+1. **Commit.** The pre-commit hook runs gitleaks on the staged changes, plus `ruff check` and `ruff format --check`. Fix whatever it reports.
+2. **Push.** The pre-push hook (`scripts/security-review-hook.sh`) collects all commits that are not on the remote yet (`git rev-list <pushed ref> --not --remotes=<remote>`). It has Claude Code (`claude -p`) review them **one commit at a time**, so a secret added in one commit and removed in a later one is still caught. The push is blocked unless the review ends with `SECURITY_REVIEW: PASS`.
+3. **Resolve every finding of severity *medium* or higher** with a new commit, then push again. Alternatively, accept it explicitly (below).
+4. Before opening a change for review or archiving it, also run `uv run pytest` and `uv run pip-audit`.
+
+Install both hooks once per clone with `uv run pre-commit install`. It installs `pre-commit` and `pre-push`, as set in `.pre-commit-config.yaml`. The hook needs a logged-in Claude Code CLI (`claude`).
+
+### Accepting a finding
+Add a trailer to the commit that contains the finding (`git commit --amend`, or a later commit before pushing):
+```
+Security-Review-Accepted: <finding> — <reason>
+```
+The pre-push review receives all such trailers of the commits it reviews. It still reports a matching finding, but does not fail on it. Accept only findings you have understood, and give a concrete reason.
+
+### Skipping the review
+`git push --no-verify` or `SKIP=security-review git push` skip the AI review. Use them only when the review cannot run (e.g. no network). Then run the review as soon as possible, either interactively with `/security-review` in Claude Code or by running `scripts/security-review-hook.sh` with `PRE_COMMIT_TO_REF` set to the pushed commit and `PRE_COMMIT_REMOTE_NAME` to a remote that does not have it. Record the reason in the next commit message.
+
+There is deliberately **no CI review**: this project has a single developer. A CI-based review would need a separately billed Anthropic API key and adds little over the local gate. Revisit this when other people contribute.
 
 ### Automated checks
 | Check | Tool | Where |
 |---|---|---|
-| Secret scanning | `gitleaks` | pre-commit + CI |
-| Python security lint | `ruff` (`S` rules) / `bandit` | pre-commit + CI |
-| Dependency vulnerabilities | `pip-audit` | CI |
-| Terraform | `terraform fmt/validate`, `tflint`, `checkov` | pre-commit + CI |
-| AI security review | `claude -p "/security-review"` | pre-commit hook |
-| AI security review | `anthropics/claude-code-security-review` GitHub Action | CI, every PR (once the GitHub remote exists) |
-
-The local hook can be bypassed with `--no-verify`, so **CI is the enforcing gate** once the remote exists. Using `--no-verify` requires a stated reason in the commit message.
+| Secret scanning | `gitleaks` | pre-commit (every commit) |
+| Python lint incl. security rules | `ruff check` (`S` rules) | pre-commit |
+| Formatting | `ruff format --check` | pre-commit |
+| AI security review | `scripts/security-review-hook.sh` (`claude -p`, all unpushed commits) | pre-push |
+| Tests | `uv run pytest` | manually, before pushing |
+| Dependency vulnerabilities | `uv run pip-audit` | manually, before pushing and after dependency changes |
+| Terraform | `terraform fmt/validate`, `tflint`, `checkov` | pre-commit, added with the first `infra/` change |
 
 ### Review focus areas for this project
 - **Secrets:** OAuth refresh tokens and the client secret are never committed, logged or written to S3. They live only in SSM SecureString, readable by the ingest role alone.
@@ -71,4 +78,4 @@ The local hook can be bypassed with `--no-verify`, so **CI is the enforcing gate
 ## 3. General conventions
 - Never commit `.env`, credentials, tokens, Terraform state or `*.tfvars` containing personal data, or real API responses. Test fixtures are anonymised.
 - AWS changes go only through Terraform (`infra/`). The Google Cloud setup follows `docs/setup-google-youtube.md`.
-- Commit messages: imperative subject, OpenSpec change id in the body, `Security-Review:` trailer.
+- Commit messages: imperative subject, OpenSpec change id in the body, and `Security-Review-Accepted:` trailers for accepted findings (§2).

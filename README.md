@@ -74,9 +74,9 @@ Restart Claude Desktop. The `yta` tools then appear under the tools icon. If `uv
 
 ## Development
 
-The project uses spec-driven changes (OpenSpec) and requires a security review before every commit; see `INSTRUCTIONS.md`.
+The project uses spec-driven changes (OpenSpec) and reviews every commit for security before it is pushed; see `INSTRUCTIONS.md`.
 
 ```sh
-uv run pre-commit install
+uv run pre-commit install    # installs the pre-commit and pre-push hooks
 uv run ruff check && uv run ruff format --check && uv run pytest && uv run pip-audit
 ```

@@ -396,7 +396,7 @@ Write operations stay in the CLI, which uses a separate, write-capable AWS role.
 
 ### v1
 - **Cost:** $0 (runs locally).
-- **Security:** read-only, no network, sandboxed SQL, input size limits (§8.5); per-commit security review (`INSTRUCTIONS.md`).
+- **Security:** read-only, no network, sandboxed SQL, input size limits (§8.5); AI security review of every commit before it is pushed (`INSTRUCTIONS.md`).
 - **Correctness:** exports are reconciled against their totals rows; ratios are recomputed, never averaged; distinct counts are never summed.
 - **Freshness:** new exports are picked up on the next tool call, without a restart.
 - **Robustness:** a broken export is rejected with a reason, and the rest of the dataset stays usable.
@@ -440,8 +440,8 @@ DynamoDB on-demand would also cost ≈ $0, so cost does not decide between the t
 - **Language:** Python 3.12; `uv` for dependencies and the lockfile.
 - **v1 runtime dependencies:** the official MCP Python SDK (`mcp` 2.x, `MCPServer`, stdio) and DuckDB 2.x (in-memory). No other runtime dependencies.
 - **Tests:** pytest with synthetic export fixtures and an in-process MCP client.
-- **Tooling:** ruff (incl. `S` security rules), pip-audit, pre-commit with gitleaks and an AI security-review hook.
-- **Process:** OpenSpec + per-commit security review (`INSTRUCTIONS.md`).
+- **Tooling:** ruff (incl. `S` security rules), pip-audit, pre-commit hooks with gitleaks and ruff, and an AI security review as a pre-push hook.
+- **Process:** OpenSpec + security review of every commit before it is pushed (`INSTRUCTIONS.md`). No CI (single developer).
 - **Git hosting:** GitHub (`Skarabaeus/YouTube-Analyser`).
 - **Later phase:** DuckDB also in Lambda (Parquet read/write, no pyarrow, so the Lambda zip stays under its size limit); Google API client; Terraform (`infra/`) with `tflint` and `checkov`; recorded and anonymised API fixtures.
 
@@ -465,7 +465,7 @@ DynamoDB on-demand would also cost ≈ $0, so cost does not decide between the t
 
 ## 14. Phasing (each phase = one or more OpenSpec changes)
 
-0. **v1 — local export MCP** (`add-local-export-mcp`): repo tooling (uv, ruff, pytest, pre-commit with gitleaks and security review), Studio export ingestion, local stdio MCP server. **Current.**
+0. **v1 — local export MCP** (`add-local-export-mcp`): repo tooling (uv, ruff, pytest, pre-commit/pre-push hooks with gitleaks and security review), Studio export ingestion, local stdio MCP server. **Current.**
 
 Possible next steps on the local path:
 - More export dimensions (traffic sources, geography, devices, subscribed status).

@@ -12,7 +12,7 @@ rules:
     - Include a "Security considerations" section
     - Include a "Data retention" section when the change stores or deletes data
   tasks:
-    - Include a final task to run /security-review and the automated checks before committing
+    - Include a final task to run the automated checks (pre-commit, pytest, pip-audit) before committing; the AI security review runs on push
 
 # Project context (optional)
 # Add only constraints that should guide OpenSpec artifacts and workflows.

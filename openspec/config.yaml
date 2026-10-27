@@ -1,0 +1,46 @@
+schema: spec-driven
+
+context: |
+  Product spec: SPEC.md. Working rules: INSTRUCTIONS.md.
+  Single tenant ("default") in v1, but every table, S3 path, SSM path and IAM policy must be tenant-scoped.
+  Data must comply with YouTube API Developer Policies as described in SPEC.md section 7 (30-day metadata limit, 30-day auth re-confirmation, revocation purge).
+  AWS region eu-central-1; all infrastructure via Terraform; Python 3.12 with uv.
+  MCP server is strictly read-only.
+
+rules:
+  design:
+    - Include a "Security considerations" section
+    - Include a "Data retention" section when the change stores or deletes data
+  tasks:
+    - Include a final task to run /security-review and the automated checks before committing
+
+# Project context (optional)
+# Add only constraints that should guide OpenSpec artifacts and workflows.
+# Include constraints an agent cannot infer by reading the code.
+# Keep general project documentation and discoverable codebase facts out.
+# Example:
+#   context: |
+#     Designs and tasks must cover Windows, macOS, and Linux
+#     Write all artifacts in Spanish
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always state what is out of scope
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing

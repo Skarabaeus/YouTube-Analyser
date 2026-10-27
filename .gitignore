@@ -1,0 +1,58 @@
+# Secrets & local config
+.env
+.env.*
+client_secret*.json
+*.pem
+*.key
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.example.tfvars
+crash.log
+*.tfplan
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+dist/
+build/
+
+# Data
+*.parquet
+*.duckdb
+exports/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+.claude/settings.local.json
+
+# Personal data (Studio exports, local samples)
+data/
+report-exports/
+
+# Belt and braces: never commit raw exports or local data files anywhere
+*.csv
+*.zip
+*.xlsx
+*.sqlite
+*.db
+!tests/fixtures/**/*.csv
+
+# Local MCP / client configs (may contain absolute paths or env values)
+claude_desktop_config.json
+.mcp.local.json
+
+# More Python tooling
+.mypy_cache/
+htmlcov/
+*.egg-info/
+*.log

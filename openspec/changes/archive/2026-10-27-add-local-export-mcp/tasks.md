@@ -54,7 +54,7 @@
 
 ## 7. Integration and release checks
 
-- [ ] 7.1 End-to-end manual check with the real `report-exports` folder in Claude Desktop: `dataset_status` shows the export as accepted, `channel_overview(last_28_days)` matches the Studio UI for the same period, and a `query_sql` file-access attempt is rejected
+- [x] 7.1 End-to-end manual check with the real `report-exports` folder in Claude Desktop: `dataset_status` shows the export as accepted, `channel_overview(last_28_days)` matches the Studio UI for the same period, and a `query_sql` file-access attempt is rejected
 - [x] 7.2 Run `/security-review` on the staged changes, then `ruff check`, `pytest`, `pip-audit` and `pre-commit run --all-files`; resolve findings of medium severity or higher before committing with the `Security-Review:` trailer
 
 ## Workflow follow-up
